@@ -1,121 +1,114 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const handleSubmit = async () => {
+    if (!title.trim() || !description.trim()) {
+      setToast("⚠️ Fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("http://localhost:8000/submit-doubt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title, description }),
+      });
+
+      if (!response.ok) throw new Error();
+
+      setToast("✅ Doubt submitted successfully!");
+      setTitle("");
+      setDescription("");
+
+      setTimeout(() => setToast(""), 3000);
+    } catch {
+      setToast("❌ Submission failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
+
+      {/* Glow */}
+      <div className="absolute w-[500px] h-[500px] bg-pink-500 opacity-20 blur-3xl rounded-full top-[-150px] left-[-150px]" />
+      <div className="absolute w-[500px] h-[500px] bg-indigo-500 opacity-20 blur-3xl rounded-full bottom-[-150px] right-[-150px]" />
+
+      {/* Card */}
+      <div className="relative w-full max-w-lg p-8 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl transition-all hover:scale-[1.01]">
+
+        {/* Header */}
+        <h1 className="text-4xl font-bold text-white text-center mb-1">
+          AskItPro 🚀
+        </h1>
+        <p className="text-center text-white/80 mb-6 text-sm">
+          Ask doubts anonymously. Learn without fear.
+        </p>
+
+        {/* Title */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="e.g. What is recursion?"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 
+                       border border-white/30 focus:outline-none focus:ring-2 focus:ring-white transition"
+          />
+          <p className="text-xs text-white/60 mt-1 text-right">
+            {title.length}/100
           </p>
         </div>
+
+        {/* Description */}
+        <div className="mb-6">
+          <textarea
+            placeholder="Explain your doubt clearly..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 
+                       border border-white/30 focus:outline-none focus:ring-2 focus:ring-white resize-none transition"
+          />
+          <p className="text-xs text-white/60 mt-1 text-right">
+            {description.length}/300
+          </p>
+        </div>
+
+        {/* Button */}
         <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={handleSubmit}
+          disabled={loading}
+          className={`w-full py-3 rounded-xl font-semibold transition-all duration-300
+          ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-white text-purple-600 hover:scale-[1.03] hover:shadow-xl active:scale-[0.98]"
+          }`}
         >
-          Count is {count}
+          {loading ? "Submitting..." : "Submit Doubt"}
         </button>
-      </section>
 
-      <div className="ticks"></div>
+      </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* Toast */}
+      {toast && (
+        <div className="absolute bottom-6 bg-white text-gray-800 px-6 py-3 rounded-xl shadow-lg animate-bounce">
+          {toast}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
