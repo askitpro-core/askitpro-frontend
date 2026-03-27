@@ -10,25 +10,30 @@ function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
+  // 🔥 Fetch doubts (source of truth)
+  const fetchDoubts = async () => {
+    try {
+      const data = await getDoubts();
+
+      // 🔥 SAFE NORMALIZATION
+      const formatted = (data || []).map((d) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        submitted_at: d.submitted_at,
+        upvotes: d.upvotes ?? 0,   // 🔥 IMPORTANT FIX
+        resolved: d.resolved ?? false,
+      }));
+
+      setDoubts(formatted);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDoubts = async () => {
-      try {
-        const data = await getDoubts();
-
-        // Add resolved flag manually
-        const formatted = (data.doubts || data).map((d) => ({
-          ...d,
-          resolved: false,
-        }));
-
-        setDoubts(formatted);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDoubts();
   }, []);
 
@@ -42,19 +47,51 @@ function TeacherDashboard() {
     return true;
   });
 
-  // 🔥 Solve handler
+  // ✅ Solve
   const handleSolve = (id) => {
     setDoubts((prev) =>
-      prev.map((d, index) =>
-        (d.id ?? index) === id ? { ...d, resolved: true } : d
+      prev.map((d) =>
+        d.id === id ? { ...d, resolved: true } : d
       )
     );
+  };
+
+  // 🔥 FINAL UPVOTE (100% SAFE)
+  const handleUpvote = async (id) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/doubts/${id}/upvote`, {
+        method: "POST",
+      });
+
+      const result = await res.json();
+
+      console.log("UPVOTE RESPONSE:", result); // 🔍 debug
+
+      // ❌ Already voted → DO NOTHING
+      if (result.message === "Already voted") {
+        return;
+      }
+
+      // ✅ Safe update
+      if (result.data && typeof result.data.upvotes === "number") {
+        setDoubts((prev) =>
+          prev.map((d) =>
+            d.id === id
+              ? { ...d, upvotes: result.data.upvotes }
+              : d
+          )
+        );
+      }
+
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="h-screen overflow-y-auto bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
 
-      {/* TOP SECTION */}
+      {/* TOP */}
       <div className="p-6 max-w-7xl mx-auto">
 
         {/* HEADER */}
@@ -87,13 +124,14 @@ function TeacherDashboard() {
         </div>
       </div>
 
-      {/* BOTTOM SECTION */}
+      {/* BOTTOM */}
       <div className="bg-white/10 backdrop-blur-2xl rounded-t-[40px] px-8 py-10 mt-16 max-w-7xl mx-auto shadow-2xl border-t border-white/20">
 
         <DoubtsGrid
           doubts={filteredDoubts}
           loading={loading}
           onSolve={handleSolve}
+          onUpvote={handleUpvote}
         />
 
       </div>

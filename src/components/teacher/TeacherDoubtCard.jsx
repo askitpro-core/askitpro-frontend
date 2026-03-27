@@ -1,9 +1,8 @@
-function TeacherDoubtCard({ doubt, onSolve, id }) {
+function TeacherDoubtCard({ doubt, onSolve, onUpvote }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-md 
                     hover:shadow-2xl hover:-translate-y-2 
-                    transition-all duration-300 cursor-pointer 
-                    animate-fadeIn">
+                    transition-all duration-300 cursor-pointer">
 
       {/* TOP */}
       <div className="bg-gradient-to-r from-red-500 to-pink-500 h-20"></div>
@@ -27,10 +26,19 @@ function TeacherDoubtCard({ doubt, onSolve, id }) {
           {doubt.description}
         </p>
 
+        {/* 👍 UPVOTE */}
         <button
-          onClick={() => onSolve(id)}
+          onClick={() => onUpvote(doubt.id)}
+          className="mt-3 text-xs text-blue-600 hover:underline"
+        >
+          👍 {doubt.upvotes ?? 0}
+        </button>
+
+        {/* ✅ SOLVE */}
+        <button
+          onClick={() => onSolve(doubt.id)}
           disabled={doubt.resolved}
-          className={`mt-4 w-full py-1 text-xs rounded-full transition
+          className={`mt-3 w-full py-1 text-xs rounded-full transition
             ${doubt.resolved
               ? "bg-green-500 text-white cursor-not-allowed"
               : "border border-gray-300 hover:bg-gray-100"

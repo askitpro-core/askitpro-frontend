@@ -1,6 +1,6 @@
 import TeacherDoubtCard from "./TeacherDoubtCard";
 
-function DoubtsGrid({ doubts, loading, onSolve }) {
+function DoubtsGrid({ doubts, loading, onSolve, onUpvote }) {
   if (loading) {
     return <p className="text-center text-white">Loading...</p>;
   }
@@ -23,12 +23,12 @@ function DoubtsGrid({ doubts, loading, onSolve }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-      {doubts.map((doubt, index) => (
+      {doubts.map((doubt) => (
         <TeacherDoubtCard
-          key={index}
+          key={doubt.id}
           doubt={doubt}
           onSolve={onSolve}
-          id={doubt.id ?? index}
+          onUpvote={onUpvote}   // 🔥 THIS WAS MISSING
         />
       ))}
     </div>
