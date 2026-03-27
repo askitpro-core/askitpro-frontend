@@ -1,37 +1,42 @@
-import { useState } from "react";
 import { FaArrowUp } from "react-icons/fa";
 
-function DoubtList({ doubts }) {
-  const [votes, setVotes] = useState({});
+function DoubtList({ doubts, setDoubts }) {
 
-  const handleUpvote = (index) => {
-  setVotes((prev) => {
-    if (prev[index]) return prev; // already voted ❌
+  const handleUpvote = async (id) => {
+    if (id === undefined || id === null) {
+      console.error("No ID found for this doubt!");
+      return;
+    }
 
-    return {
-      ...prev,
-      [index]: 1,
-    };
-  });
-};
+    try {
+      const response = await fetch(`http://localhost:8000/doubts/${id}/upvote`, {
+        method: "POST",
+      });
 
-  if (!Array.isArray(doubts)) {
-    return <p className="text-red-400 mt-6">Error loading doubts</p>;
-  }
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update the UI state locally
+        const updated = doubts.map((d) => 
+          d.id === id ? { ...d, upvotes: data.new_upvotes } : d
+        );
+        setDoubts(updated);
+      }
+    } catch (error) {
+      console.error("Upvote failed:", error);
+    }
+  };
 
-  if (doubts.length === 0) {
-    return (
-      <p className="text-gray-300 text-center mt-6">
-        No doubts yet. Be the first one 🚀
-      </p>
-    );
+  if (!Array.isArray(doubts) || doubts.length === 0) {
+    return null; // Don't show anything if empty
   }
 
   return (
+    // mt-12 creates the gap between the main box and the first doubt
     <div className="mt-12 w-full max-w-2xl space-y-5">
-      {doubts.map((doubt, index) => (
+      {doubts.map((doubt) => (
         <div
-          key={index}
+          key={doubt.id}
           className="group relative p-6 rounded-2xl 
                      bg-white/10 backdrop-blur-xl 
                      border border-white/20 
@@ -49,25 +54,19 @@ function DoubtList({ doubts }) {
             <p className="text-gray-300 text-sm mb-3 leading-relaxed">
               {doubt.description}
             </p>
-
-            <span className="text-xs text-gray-400">
-              {doubt.timestamp
-                ? new Date(doubt.timestamp).toLocaleString()
-                : ""}
-            </span>
           </div>
 
           {/* RIGHT SIDE - UPVOTE */}
           <div className="flex flex-col items-center justify-center gap-2">
             <button
-              onClick={() => handleUpvote(index)}
+              onClick={() => handleUpvote(doubt.id)}
               className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
             >
-              <FaArrowUp className="text-white" />
+              <FaArrowUp className="text-white text-sm" />
             </button>
 
             <span className="text-white text-sm font-semibold">
-              {votes[index] || 0}
+              {doubt.upvotes || 0}
             </span>
           </div>
         </div>

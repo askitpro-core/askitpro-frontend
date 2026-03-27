@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import DoubtForm from "../components/doubt/DoubtForm";
 import DoubtList from "../components/doubt/DoubtList";
-import { getDoubts } from "../services/api";
 
 function Home() {
   const [doubts, setDoubts] = useState([]);
@@ -9,18 +8,21 @@ function Home() {
 
   const fetchDoubts = async () => {
     try {
-      const data = await getDoubts();
-      const fetched = data.doubts || data;
+      const response = await fetch("http://localhost:8000/doubts");
+      if (!response.ok) throw new Error("Backend not responding");
+      
+      const data = await response.json();
+      // Ensure we have an array and show newest first
+      const fetched = data.doubts || [];
+      setDoubts([...fetched].reverse());
 
-      setDoubts(fetched.reverse()); // newest first
-
-      // 🔥 auto scroll
+      // Auto-scroll logic
       setTimeout(() => {
         topRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
 
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Error:", err);
     }
   };
 
@@ -29,15 +31,14 @@ function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center 
-                    bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4 py-10">
-
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 py-10 flex flex-col items-center px-4">
       <div ref={topRef}></div>
-
+      
+      {/* 1. THE FORM (DoubtForm already contains the 'AskitPro' title) */}
       <DoubtForm onSubmitSuccess={fetchDoubts} />
 
-      <DoubtList doubts={doubts} />
-
+      {/* 2. THE LIST (This handles the upvotes) */}
+      <DoubtList doubts={doubts} setDoubts={setDoubts} />
     </div>
   );
 }
