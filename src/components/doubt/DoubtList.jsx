@@ -1,7 +1,6 @@
 import { FaArrowUp } from "react-icons/fa";
 
 function DoubtList({ doubts, setDoubts }) {
-
   const handleUpvote = async (id) => {
     if (id === undefined || id === null) {
       console.error("No ID found for this doubt!");
@@ -9,16 +8,21 @@ function DoubtList({ doubts, setDoubts }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/doubts/${id}/upvote`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `http://localhost:8000/doubts/${id}/upvote`,
+        {
+          method: "POST",
+        },
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Update the UI state locally
-        const updated = doubts.map((d) => 
-          d.id === id ? { ...d, upvotes: data.new_upvotes } : d
+      const result = await response.json();
+
+      if (result.message === "Already voted") return;
+
+      // Update the UI state locally
+      if (result.data && typeof result.data.upvotes === "number") {
+        const updated = doubts.map((d) =>
+          d.id === id ? { ...d, upvotes: result.data.upvotes } : d,
         );
         setDoubts(updated);
       }
