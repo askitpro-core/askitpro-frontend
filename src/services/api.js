@@ -23,14 +23,11 @@ export const submitDoubt = async (title, description) => {
   }
 };
 export const getDoubts = async () => {
-  try {
-    const res = await fetch(BASE_URL + "/doubts");
-    if (!res.ok) throw new Error("Failed to fetch doubts");
-    return await res.json();
-  } catch (err) {
-    console.error("Get Doubts Error:", err);
-    throw err;
-  }
+  const res = await fetch("http://127.0.0.1:8000/doubts");
+  const data = await res.json();
+
+  // 🔥 ALWAYS return array only
+  return data.doubts;
 };
 
 export const upvoteDoubt = async (doubtId) => {
