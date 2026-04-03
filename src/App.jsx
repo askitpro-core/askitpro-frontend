@@ -10,7 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* Old */}
+        {/* Old UI */}
         <Route path="/" element={<Home />} />
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
 
