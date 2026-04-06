@@ -1,9 +1,31 @@
 import { useState } from "react";
 import JoinSession from "../components/session/JoinSession";
+import { submitDoubt } from "../services/api";
 
 function StudentSession() {
   const [joined, setJoined] = useState(false);
   const [sessionId, setSessionId] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!description.trim()) return;
+
+    try {
+      setLoading(true);
+
+      await submitDoubt(description, sessionId);
+
+      alert("Doubt submitted ✅"); // feedback
+
+      setDescription("");
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting doubt ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center text-white">
@@ -22,19 +44,21 @@ function StudentSession() {
             Joined Session: {sessionId}
           </h2>
 
-          <input
-            placeholder="Doubt title"
-            className="w-full mb-3 px-3 py-2 rounded bg-white/20"
-          />
-
           <textarea
             placeholder="Describe your doubt..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full mb-3 px-3 py-2 rounded bg-white/20"
           />
 
-          <button className="w-full bg-white text-black py-2 rounded-lg">
-            Submit Doubt
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-white text-black py-2 rounded-lg"
+          >
+            {loading ? "Submitting..." : "Submit Doubt"}
           </button>
+
         </div>
       )}
     </div>
