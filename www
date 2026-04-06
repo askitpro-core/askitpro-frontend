@@ -1,0 +1,23 @@
+[33m0d274ea[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m Merge pull request #9 from askitpro-core/revert-8-join-session-component
+[33m3488396[m Revert "Add Join Session component for student side"
+[33m39311a1[m Merge pull request #8 from askitpro-core/join-session-component
+[33ma24db06[m Add JoinSession component
+[33m3a261ac[m Merge pull request #7 from askitpro-core/develop
+[33mce3d675[m new file
+[33m9a5c35d[m Merge pull request #6 from askitpro-core/upvote
+[33m4484f7b[m[33m ([m[1;31morigin/upvote[m[33m, [m[1;31morigin/test-upvote[m[33m, [m[1;32mupvote[m[33m)[m Merge branch 'develop' into test-upvote
+[33m6a07ab2[m fixed bug when upvote clicked it was resetting to 0
+[33m25d9b79[m Merge pull request #5 from askitpro-core/feature/ui-upgrade-upvote
+[33mfe3a1b3[m[33m ([m[1;31morigin/feature/ui-upgrade-upvote[m[33m, [m[1;32mfeature/ui-upgrade-upvote[m[33m)[m feat: teacher dashboard UI + upvote integration (bug pending)
+[33mc2dda95[m Merge branch 'develop' into feature/ui-upgrade-upvote
+[33m4f19847[m my local changes before pull
+[33m6cd382b[m[33m ([m[1;32mfeature/teacher-dashboard[m[33m)[m Merge pull request #4 from askitpro-core/upvote
+[33mae65195[m merge: fixed upvote conflicts and synced with develop
+[33meb6dd90[m feat: implement persistent upvote with backend state
+[33mb34d6aa[m feat: upvote system with backend integration (Network 200 0K, votes persist)
+[33mc0e97e6[m Merge pull request #2 from askitpro-core/feature/ui-upgrade-upvote
+[33m46344d3[m Enhance UI with premium styling, add doubt list with real-time updates and upvote feature
+[33me95586c[m Merge pull request #1 from askitpro-core/feature/doubt-form-ui
+[33m0491aa7[m[33m ([m[1;31morigin/feature/doubt-form-ui[m[33m, [m[1;32mfeature/doubt-form-ui[m[33m)[m Implement premium UI for doubt submission with API integration
+[33m44ed89e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Setup React frontend with Vite
+[33med5cbea[m Initial commit

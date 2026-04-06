@@ -1,44 +1,42 @@
-const BASE_URL= "http://127.0.0.1:8000"; 
+const BASE_URL = "http://127.0.0.1:8000";
 
-export const submitDoubt = async (title, description) => {
-  try {
-    // I manually joined the strings to avoid backtick issues for you
-    const res = await fetch(BASE_URL + "/submit-doubt", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, description }),
-    });
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.detail || "Failed to submit");
-    }
+// ✅ Submit doubt (correct schema)
+export const submitDoubt = async (text, sessionId) => {
+  const res = await fetch(BASE_URL + "/submit-doubt", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text,
+      author_name: "Anonymous",
+      room_code: sessionId,
+    }),
+  });
 
-    return await res.json();
-  } catch (err) {
-    console.error("Submit Doubt Error:", err);
-    throw err;
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || "Submit failed");
   }
+
+  return await res.json();
 };
-export const getDoubts = async () => {
-  const res = await fetch("http://127.0.0.1:8000/doubts");
+
+
+// ✅ Get doubts (FIXED — ALWAYS RETURNS ARRAY)
+export const getDoubts = async (sessionId) => {
+  const res = await fetch(
+    BASE_URL + "/doubts?room_code=" + sessionId
+  );
+
+  if (!res.ok) throw new Error("Fetch failed");
+
   const data = await res.json();
 
-  // 🔥 ALWAYS return array only
-  return data.doubts;
-};
+  // 🔥 HANDLE BOTH BACKEND FORMATS
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.doubts)) return data.doubts;
 
-export const upvoteDoubt = async (doubtId) => {
-  try {
-    const res = await fetch(BASE_URL + "/doubts/" + doubtId + "/upvote", {
-      method: "POST",
-    });
-    if (!res.ok) throw new Error("Vote failed");
-    return await res.json();
-  } catch (err) {
-    console.error("Upvote Error:", err);
-    throw err;
-  }
+  return [];
 };
