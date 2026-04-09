@@ -37,6 +37,6 @@ export const getDoubts = async (sessionId) => {
   // 🔥 HANDLE BOTH BACKEND FORMATS
   if (Array.isArray(data)) return data;
   if (Array.isArray(data.doubts)) return data.doubts;
-
   return [];
+
 };
