@@ -8,40 +8,43 @@ import { getDoubts } from "../services/api";
 function TeacherDashboard() {
   const [doubts, setDoubts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
   // 🆕 Step 1: Added search state
   const [searchQuery, setSearchQuery] = useState("");
 
   // 🔥 Fetch doubts (Updated to handle Search)
   const fetchDoubts = async (query = "") => {
-    setLoading(true);
-    try {
-      // 🆕 Step 2: Use the search endpoint if a query exists
-      let data;
-      if (query.trim() !== "") {
-        const response = await fetch('http://127.0.0.1:8000/search?query=${query}');
-        data = await response.json();
-      } else {
-        data = await getDoubts();
-      }
-
-      // 🔥 SAFE NORMALIZATION (Shivraj's logic)
-      const formatted = (data || []).map((d) => ({
-        id: d.id,
-        title: d.title,
-        description: d.description,
-        submitted_at: d.submitted_at,
-        upvotes: d.upvotes ?? 0,
-        resolved: d.resolved ?? false,
-      }));
-
-      setDoubts(formatted);
-    } catch (err) {
-      console.error("Fetch/Search Error:", err);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  setError(null); // Clear any old errors before starting
+  try {
+    let data;
+    if (query.trim() !== "") {
+      const response = await fetch('http://127.0.0.1:8000/search?query=${query}');
+      if (!response.ok) throw new Error("Search failed"); // If server says no
+      data = await response.json();
+    } else {
+      data = await getDoubts();
     }
-  };
+
+    const formatted = (data || []).map((d) => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      submitted_at: d.submitted_at,
+      upvotes: d.upvotes ?? 0,
+      resolved: d.resolved ?? false,
+    }));
+
+    setDoubts(formatted);
+  } catch (err) {
+    console.error("Fetch Error:", err);
+    // 🆕 Step B: Save the error message
+    setError("Unable to load doubts. Please check your connection.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchDoubts();
@@ -140,13 +143,29 @@ function TeacherDashboard() {
         </div>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-2xl rounded-t-[40px] px-8 py-10 mt-16 max-w-7xl mx-auto shadow-2xl border-t border-white/20">
-        <DoubtsGrid
-          doubts={filteredDoubts}
-          loading={loading}
-          onSolve={handleSolve}
-          onUpvote={handleUpvote}
-        />
+{/* BOTTOM SECTION */}
+<div className="bg-white/10 backdrop-blur-2xl rounded-t-[40px] px-8 py-10 mt-16 max-w-7xl mx-auto shadow-2xl border-t border-white/20">
+
+        {/* 🆕 Step C: Show Error UI if something went wrong */}
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <p className="text-white text-lg font-medium">{error}</p>
+            <button 
+              onClick={() => fetchDoubts(searchQuery)} 
+              className="mt-6 px-6 py-2 bg-orange-400 text-black rounded-full font-bold hover:bg-orange-500 transition-all"
+            >
+              Try Again 🔄
+            </button>
+          </div>
+        ) : (
+          <DoubtsGrid
+            doubts={filteredDoubts}
+            loading={loading}
+            onSolve={handleSolve}
+            onUpvote={handleUpvote}
+          />
+        )}
       </div>
     </div>
   );
