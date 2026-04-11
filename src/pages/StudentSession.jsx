@@ -7,18 +7,20 @@ function StudentSession() {
   const [sessionId, setSessionId] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async () => {
     if (!description.trim()) return;
 
     try {
       setLoading(true);
-
+      setSuccessMessage(""); // Clear old message
+      
       await submitDoubt(description, sessionId);
+      setSuccessMessage("Doubt submitted successfully! 🚀");
+      setDescription(""); // Clears the text box
 
-      alert("Doubt submitted ✅"); // feedback
-
-      setDescription("");
+    
     } catch (err) {
       console.error(err);
       alert("Error submitting doubt ❌");
@@ -58,6 +60,11 @@ function StudentSession() {
           >
             {loading ? "Submitting..." : "Submit Doubt"}
           </button>
+          {successMessage && (
+  <p className="text-green-400 mt-2 text-center font-medium">
+    {successMessage}
+  </p>
+)}
 
         </div>
       )}
