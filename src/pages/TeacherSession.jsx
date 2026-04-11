@@ -11,17 +11,15 @@ function TeacherSession() {
 
   const [doubts, setDoubts] = useState([]);
 
-  // 🔥 INITIAL FETCH (FIXED)
+  // 🔥 INITIAL FETCH
   useEffect(() => {
     if (!sessionId) return;
 
     const fetchInitial = async () => {
       try {
         const data = await getDoubts(sessionId);
-
-        console.log("INITIAL DOUBTS:", data); // debug
-
-        setDoubts(data);
+        console.log("INITIAL DOUBTS:", data);
+        setDoubts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Fetch error:", err);
       }
@@ -30,7 +28,7 @@ function TeacherSession() {
     fetchInitial();
   }, [sessionId]);
 
-  // 🔥 WEBSOCKET (REAL-TIME)
+  // 🔥 WEBSOCKET
   useEffect(() => {
     if (!sessionId) return;
 
@@ -46,7 +44,7 @@ function TeacherSession() {
           const newDoubt = message.data;
 
           setDoubts((prev) => {
-            const exists = prev.some((d) => d.id === newDoubt.id);
+            const exists = prev.some((d) => d?.id === newDoubt.id);
             if (exists) return prev;
 
             return [newDoubt, ...prev];
@@ -62,6 +60,50 @@ function TeacherSession() {
 
     return () => ws.close();
   }, [sessionId]);
+
+  // 🔥 FINAL CLEAN VOTING SYSTEM
+  const handleVote = async (id, type) => {
+    try {
+      const currentVote = localStorage.getItem("vote_" + id);
+
+      // ✅ UPVOTE (ONLY ONCE)
+      if (type === "up") {
+        if (currentVote === "up") return;
+
+        setDoubts((prev) =>
+          prev.map((d) =>
+            d.id === id
+              ? { ...d, upvotes: (d.upvotes ?? 0) + 1 }
+              : d
+          )
+        );
+
+        localStorage.setItem("vote_" + id, "up");
+
+        await fetch(`http://127.0.0.1:8000/doubts/${id}/upvote`, {
+          method: "POST",
+        });
+      }
+
+      // 🔁 DOWNVOTE = UNDO ONLY
+      if (type === "down") {
+        if (currentVote !== "up") return;
+
+        setDoubts((prev) =>
+          prev.map((d) =>
+            d.id === id
+              ? { ...d, upvotes: Math.max(0, (d.upvotes ?? 0) - 1) }
+              : d
+          )
+        );
+
+        localStorage.removeItem("vote_" + id);
+      }
+
+    } catch (err) {
+      console.error("Vote error:", err);
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white overflow-hidden">
@@ -114,30 +156,61 @@ function TeacherSession() {
                   No doubts yet...
                 </p>
               ) : (
-                doubts.map((doubt, index) => (
-                  <div
-                    key={doubt.id || index}
-                    className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-2xl shadow-lg hover:scale-[1.02] transition"
-                  >
-                    <h2 className="font-semibold text-lg">
-                      {doubt.author_name || "Student"}
-                    </h2>
+                doubts.filter(Boolean).map((doubt, index) => {
+                  const vote = localStorage.getItem("vote_" + doubt.id);
 
-                    <p className="text-sm text-gray-200 mt-1">
-                      {doubt.text}
-                    </p>
+                  return (
+                    <div
+                      key={doubt.id || index}
+                      className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-2xl shadow-lg hover:scale-[1.02] transition"
+                    >
+                      <h2 className="font-semibold text-lg">
+                        {doubt.author_name || "Student"}
+                      </h2>
 
-                    {doubt.tag && (
-                      <span className="inline-block mt-2 text-xs bg-pink-500/80 px-2 py-1 rounded">
-                        {doubt.tag}
-                      </span>
-                    )}
+                      <p className="text-sm text-gray-200 mt-1">
+                        {doubt.text}
+                      </p>
 
-                    <div className="text-xs mt-2 text-gray-400">
-                      👍 {doubt.upvotes ?? 0}
+                      {doubt.tag && (
+                        <span className="inline-block mt-2 text-xs bg-pink-500/80 px-2 py-1 rounded">
+                          {doubt.tag}
+                        </span>
+                      )}
+
+                      {/* VOTING */}
+                      <div className="flex gap-4 mt-3 text-xs">
+
+                        {/* 👍 UPVOTE */}
+                        <button
+                          onClick={() => handleVote(doubt.id, "up")}
+                          disabled={vote === "up"}
+                          className={`transition ${
+                            vote === "up"
+                              ? "text-green-400 cursor-not-allowed"
+                              : "text-gray-300 hover:text-green-400"
+                          }`}
+                        >
+                          👍 {doubt.upvotes ?? 0}
+                        </button>
+
+                        {/* 🔁 UNDO */}
+                        <button
+                          onClick={() => handleVote(doubt.id, "down")}
+                          disabled={vote !== "up"}
+                          className={`transition ${
+                            vote === "up"
+                              ? "text-red-400 hover:text-red-500"
+                              : "text-gray-500 cursor-not-allowed"
+                          }`}
+                        >
+                          ↩ Undo
+                        </button>
+
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </>
